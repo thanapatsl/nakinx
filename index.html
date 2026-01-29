@@ -1,1577 +1,548 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AlphaPatra - ใบแสดงรายการปั้นพอร์ต & Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js สำหรับ Dashboard -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Sarabun', sans-serif;
-        }
-        
-        @media print {
-            .no-print { display: none !important; }
-            .customer-list-section { display: none !important; }
-            body { font-size: 12px; }
-            .print-table { font-size: 11px; }
-            .page-break { page-break-after: always; }
-        }
-        
-        .kbank-green { background-color: #138f2d; }
-        .kbank-green-light { background-color: #e8f5e8; }
-        
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AlphaPatra - ใบแสดงรายการเงินฝาก</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Sarabun', sans-serif; background:#f8fafc; }
+    @media print {
+      .no-print { display: none !important; }
+      .customer-list-section { display: none !important; }
+      body { font-size: 12px; }
+      .print-table { font-size: 11px; }
+      .page-break { page-break-after: always; }
+    }
+    /* เปลี่ยนชื่อคลาสจาก kbank-* -> alphapatra-* */
+    .alphapatra-green { background-color: #138f2d; }
+    .alphapatra-green-light { background-color: #e8f5e8; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="min-h-screen">
 
-    <!-- Main Application -->
-    <div id="mainApp" class="container mx-auto p-4 max-w-7xl">
-        <!-- Customer Management Dashboard -->
-        <div class="bg-white rounded-lg shadow-lg mb-6 p-6 customer-list-section">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-xl">💼</span>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">ระบบจัดการลูกค้าปั้นพอร์ต AlphaPatra</h1>
-                        <p class="text-gray-600">จัดการใบแสดงรายการปั้นพอร์ต และดูภาพรวมทุกพอร์ตในที่เดียว</p>
-                        <div class="mt-3 flex flex-wrap items-center gap-4">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-lg font-semibold text-blue-700">ยอดรวมทุกบัญชี:</span>
-                                <div id="totalAllAccounts" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg font-bold text-lg shadow-lg">
-                                    0.00
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <span class="text-sm text-gray-500">ลูกค้าทั้งหมด</span>
-                                <span class="text-xl font-bold text-blue-600" id="customerCount">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-col md:flex-row md:items-center gap-2">
-                    <button onclick="openOverview()" class="no-print bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-lg transition-colors flex items-center space-x-2 shadow-lg">
-                        <span>📊</span>
-                        <span class="font-medium">สรุปภาพรวมลูกค้าทั้งหมด</span>
-                    </button>
-                    <button onclick="addNewCustomer()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg transition-colors flex items-center space-x-2 shadow-lg">
-                        <span>➕</span>
-                        <span class="font-medium">เพิ่มลูกค้าใหม่</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Customer Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="customerList">
-                <!-- Cards by JS -->
-            </div>
+  <!-- แอปหลัก -->
+  <div id="mainApp" class="container mx-auto p-4 max-w-7xl">
+    <!-- ส่วนรายการลูกค้า -->
+    <div id="customerDashboard" class="bg-white rounded-lg shadow-lg mb-6 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-xl">💼</span>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-800">ระบบจัดการลูกค้า</h1>
+            <p class="text-gray-600">จัดการข้อมูลและใบแสดงรายการเงินฝากของลูกค้า</p>
+          </div>
         </div>
-
-        <!-- Modal: สรุปภาพรวมลูกค้าทั้งหมด + Dashboard AlphaPatra -->
-        <div id="overviewModal"
-             class="fixed inset-0 bg-black bg-opacity-40 hidden z-50"
-             onclick="if (event.target === this) closeOverview();">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col"
-                 onclick="event.stopPropagation();">
-                <div class="px-6 pt-5 pb-3 border-b border-gray-200 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800">สรุปภาพรวมลูกค้าทั้งหมด</h2>
-                        <p class="text-sm text-gray-500">
-                            ดูมูลค่าเงินลงทุน กำไรสุทธิ และผลตอบแทน (%) ของทุกพอร์ตใน AlphaPatra
-                        </p>
-                    </div>
-                    <button onclick="closeOverview()" class="no-print px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium">
-                        ✕ ปิด
-                    </button>
-                </div>
-
-                <div class="px-6 pt-4 pb-5 overflow-y-auto">
-                    <!-- Summary cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
-                        <div class="bg-indigo-50 rounded-xl p-3">
-                            <div class="text-xs text-indigo-600 font-semibold mb-1">จำนวนลูกค้า</div>
-                            <div class="text-2xl font-bold text-indigo-700" id="overviewTotalCustomers">0</div>
-                        </div>
-                        <div class="bg-emerald-50 rounded-xl p-3">
-                            <div class="text-xs text-emerald-600 font-semibold mb-1">เงินทุนรวมทั้งหมด</div>
-                            <div class="text-lg font-semibold text-emerald-700" id="overviewSumInitial">0.00</div>
-                        </div>
-                        <div class="bg-blue-50 rounded-xl p-3">
-                            <div class="text-xs text-blue-600 font-semibold mb-1">มูลค่าพอร์ตรวมล่าสุด</div>
-                            <div class="text-lg font-semibold text-blue-700" id="overviewSumFinal">0.00</div>
-                        </div>
-                        <div class="bg-amber-50 rounded-xl p-3">
-                            <div class="text-xs text-amber-600 font-semibold mb-1">กำไรรวมทั้งหมด</div>
-                            <div class="text-lg font-semibold text-emerald-600" id="overviewSumProfit">0.00</div>
-                        </div>
-                        <!-- กำไรเฉพาะเดือนที่เลือก -->
-                        <div class="bg-rose-50 rounded-xl p-3">
-                            <div class="flex items-center justify-between mb-1">
-                                <div class="text-xs text-rose-600 font-semibold">กำไรเฉพาะเดือนที่เลือก</div>
-                                <div class="flex items-center space-x-1 text-[10px] text-rose-600">
-                                    <select id="monthlyMonth"
-                                            onchange="updateMonthlyProfit()"
-                                            class="border border-rose-200 rounded px-1 py-[1px] bg-white focus:outline-none focus:ring-1 focus:ring-rose-400">
-                                        <option value="1">ม.ค.</option>
-                                        <option value="2">ก.พ.</option>
-                                        <option value="3">มี.ค.</option>
-                                        <option value="4">เม.ย.</option>
-                                        <option value="5">พ.ค.</option>
-                                        <option value="6">มิ.ย.</option>
-                                        <option value="7">ก.ค.</option>
-                                        <option value="8">ส.ค.</option>
-                                        <option value="9">ก.ย.</option>
-                                        <option value="10">ต.ค.</option>
-                                        <option value="11">พ.ย.</option>
-                                        <option value="12">ธ.ค.</option>
-                                    </select>
-                                    <select id="monthlyYear"
-                                            onchange="updateMonthlyProfit()"
-                                            class="border border-rose-200 rounded px-1 py-[1px] bg-white focus:outline-none focus:ring-1 focus:ring-rose-400">
-                                        <!-- พ่อจะเพิ่ม/ลดปีเองภายหลังได้ -->
-                                        <option value="2567">2567</option>
-                                        <option value="2568">2568</option>
-                                        <option value="2569">2569</option>
-                                        <option value="2570">2570</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="overviewMonthlyLabel" class="text-[10px] text-rose-400 mb-1"></div>
-                            <div class="text-lg font-semibold text-rose-700" id="overviewMonthlyProfit">0.00</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <!-- Table -->
-                        <div class="border border-gray-200 rounded-xl overflow-hidden">
-                            <div class="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                                <span class="text-sm font-semibold text-gray-700">ตารางภาพรวมลูกค้า</span>
-                                <span class="text-xs text-gray-500">เรียงตามลำดับการสร้าง</span>
-                            </div>
-                            <div class="max-h-72 overflow-y-auto">
-                                <table class="min-w-full text-xs">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500">#</th>
-                                            <th class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500">ชื่อลูกค้า</th>
-                                            <th class="px-2 py-2 text-right text-[11px] font-semibold text-gray-500">เงินทุนเริ่มต้น</th>
-                                            <th class="px-2 py-2 text-right text-[11px] font-semibold text-gray-500">มูลค่าล่าสุด</th>
-                                            <th class="px-2 py-2 text-right text-[11px] font-semibold text-gray-500">กำไรสุทธิ</th>
-                                            <th class="px-2 py-2 text-right text-[11px] font-semibold text-gray-500">ผลตอบแทน %</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="overviewTableBody" class="bg-white divide-y divide-gray-100">
-                                        <!-- rows by JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Chart -->
-                        <div class="border border-gray-200 rounded-xl p-3 flex flex-col">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-700">Dashboard AlphaPatra</span>
-                                <span class="text-xs text-gray-500">ยอดล่าสุดต่อชื่อลูกค้า</span>
-                            </div>
-                            <div class="flex-1">
-                                <canvas id="overviewChart" height="220"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="flex items-center space-x-3">
+          <div class="text-right">
+            <div class="text-sm text-gray-500">ลูกค้าทั้งหมด</div>
+            <div class="text-2xl font-bold text-blue-600" id="customerCount">0</div>
+          </div>
+          <button onclick="addNewCustomer()"
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 shadow-lg">
+            <span class="text-lg">➕</span><span class="font-medium">เพิ่มลูกค้าใหม่</span>
+          </button>
         </div>
-
-        <!-- Statement View Section (Hidden by default) -->
-        <div id="statementSection" class="hidden">
-            <!-- Navigation Bar -->
-            <div class="bg-white rounded-lg shadow-lg mb-4 p-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="showCustomerList()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
-                            <span>←</span>
-                            <span>กลับหน้าหลัก</span>
-                        </button>
-                        <div class="h-6 w-px bg-gray-300"></div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-800" id="currentCustomerName">ลูกค้า</h2>
-                            <p class="text-sm text-gray-600">ใบแสดงรายการปั้นพอร์ต</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2 no-print">
-                        <button onclick="renameCurrentCustomer()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            ✏️ เปลี่ยนชื่อ
-                        </button>
-                        <button onclick="deleteCurrentCustomer()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            🗑️ ลบลูกค้า
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Header -->
-            <div class="bg-white rounded-lg shadow-lg mb-6 p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <div id="logoContainer" class="w-12 h-12 kbank-green rounded-lg flex items-center justify-center cursor-pointer hover:bg-green-700 transition-colors" onclick="document.getElementById('logoInput').click()">
-                                <span id="logoText" class="text-white font-bold text-xl">K</span>
-                                <img id="logoImage" class="w-12 h-12 rounded-lg object-cover hidden" alt="Bank Logo">
-                            </div>
-                            <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
-                        </div>
-                        <input type="text" id="reportTitle" value="ใบแสดงรายการปั้นพอร์ต" class="text-2xl font-bold text-gray-800 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white rounded px-2 py-1">
-                    </div>
-                    <div class="no-print flex space-x-2">
-                        <!-- Export Menu -->
-                        <div class="relative">
-                            <button onclick="toggleExportMenu()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
-                                📤 ส่งออก
-                                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            <div id="exportMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <div class="py-2">
-                                    <button onclick="exportAsImage('png')" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                                        🖼️ บันทึกเป็น PNG
-                                    </button>
-                                    <button onclick="exportAsImage('jpeg')" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                                        📸 บันทึกเป็น JPEG
-                                    </button>
-                                    <hr class="my-1">
-                                    <button onclick="exportCSV()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                                        📊 Export CSV
-                                    </button>
-                                    <button onclick="window.print()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center">
-                                        🖨️ Print PDF
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <input type="file" id="csvInput" accept=".csv" style="display: none;" onchange="importCSV(event)">
-                        <button onclick="document.getElementById('csvInput').click()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            📁 Import CSV
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Bank Info Form -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">เจ้าของเงินลงทุน</label>
-                        <input type="text" id="bankName" value="ธนาคารกสิกรไทย" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ผู้ดูแลพอร์ตหุ้น</label>
-                        <input
-                            type="text"
-                            id="accountNo"
-                            value="นายธนภัทร ศาลางาม (อัลฟ่าภัทร AlphaPatra)"
-                            readonly
-                            class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-700"
-                        >
-                    </div>
-                </div>
-
-                <!-- Summary Balance -->
-                <div class="mt-4 flex justify-start items-start">
-                    <div class="flex space-x-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">เงินลงทุนเริ่มต้น (รวมฝากเงินทั้งหมด)</label>
-                            <div id="initialInvestment" class="w-64 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-center font-bold text-lg text-red-700">
-                                0.00
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">สรุปยอดเงินล่าสุด</label>
-                            <div id="finalBalance" class="w-64 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-center font-bold text-lg text-green-700">
-                                0.00
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Transaction Table -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="p-4 kbank-green-light border-b">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-800">รายการธุรกรรมปั้นพอร์ต</h2>
-                        <button onclick="addRow()" class="no-print bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            ➕ เพิ่มรายการ
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full print-table">
-                        <thead class="kbank-green text-white">
-                            <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">วันที่</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">ฝากเงิน</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">ถอนเงิน</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">กำไร %</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">กำไร จำนวนเงิน</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">ช่องทาง</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">ยอดคงเหลือ</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">รายละเอียด</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider no-print">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionTable" class="bg-white divide-y divide-gray-200">
-                            <!-- Rows by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- AlphaProfit – คำนวณส่วนแบ่งกำไร (อัตโนมัติ) -->
-            <div class="bg-white rounded-lg shadow-lg mt-6 p-6">
-                <div class="flex flex-col md:flex-row md:space-x-6">
-                    <!-- Input side -->
-                    <div class="md:w-1/2">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-1">
-                            💰 AlphaProfit – คำนวณส่วนแบ่งกำไร
-                        </h3>
-                        <p class="text-sm text-gray-500 mb-4">
-                            ระบบจะดึงข้อมูลจากด้านบนและคำนวณกำไรสุทธิ 50/50 ให้โดยอัตโนมัติทุกครั้งที่มีการแก้ไขรายการปั้นพอร์ต
-                        </p>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label for="ap_total" class="block text-sm font-medium text-gray-700 mb-1">
-                                    📊 ยอดรวมทั้งหมด (หลังปั้นพอร์ต)
-                                </label>
-                                <input
-                                    id="ap_total"
-                                    type="number"
-                                    step="0.01"
-                                    readonly
-                                    placeholder="ระบบจะดึงจากสรุปยอดเงินล่าสุดด้านบน"
-                                    class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-700"
-                                >
-                                <p class="text-xs text-gray-400 mt-1">
-                                    ดึงจาก: สรุปยอดเงินล่าสุด
-                                </p>
-                            </div>
-
-                            <div>
-                                <label for="ap_fund" class="block text-sm font-medium text-gray-700 mb-1">
-                                    💵 เงินทุนลูกค้า (ต้นทุนเริ่มต้น)
-                                </label>
-                                <input
-                                    id="ap_fund"
-                                    type="number"
-                                    step="0.01"
-                                    readonly
-                                    placeholder="ระบบจะดึงจากเงินลงทุนเริ่มต้นด้านบน"
-                                    class="w-full p-2.5 border border-gray-200 rounded-lg bg-gray-50 text-gray-700"
-                                >
-                                <p class="text-xs text-gray-400 mt-1">
-                                    ดึงจาก: เงินลงทุนเริ่มต้น (รวมฝากเงินทั้งหมด)
-                                </p>
-                            </div>
-
-                            <p class="text-xs text-emerald-600">
-                                ✅ ทุกครั้งที่มีการแก้ไขรายการ ระบบจะอัปเดตค่าและคำนวณผลแบ่งกำไรให้อัตโนมัติ
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Result side -->
-                    <div class="md:w-1/2 mt-6 md:mt-0">
-                        <div
-                            id="ap_result"
-                            class="hidden border border-gray-200 rounded-xl bg-gray-50 p-4 md:p-5 shadow-sm"
-                        >
-                            <!-- Filled by JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer Address -->
-            <div class="mt-6 flex justify-end">
-                <div class="text-right text-sm text-gray-700">
-                    <div class="font-semibold text-green-700 mb-1">อัลฟ่าภัทร AlphaPatra</div>
-                    <div>เลขที่ 85/1 หมู่ 12 ตำบลสะแก</div>
-                    <div>อำเภอสตึก จังหวัดบุรีรัมย์ 31150</div>
-                    <div class="font-medium text-blue-600">(0863019724)</div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div id="customerList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
     </div>
 
-    <script>
-        // ==========================
-        // ตัวแปรหลัก
-        // ==========================
-        let currentLoggedUser = 'admin';
-        let currentUserRole = 'admin';
+    <!-- ส่วนใบแสดงรายการ (แสดงเมื่อเลือกลูกค้า) -->
+    <div id="statementSection" class="hidden">
+      <!-- แถบนำทาง -->
+      <div class="bg-white rounded-lg shadow-lg mb-4 p-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <button onclick="showCustomerList()"
+              class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+              <span>←</span><span>กลับหน้าหลัก</span>
+            </button>
+            <div class="h-6 w-px bg-gray-300"></div>
+            <div>
+              <h2 class="text-lg font-semibold text-gray-800" id="currentCustomerName">ลูกค้า</h2>
+              <p class="text-sm text-gray-600">ใบแสดงรายการเงินฝาก</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="renameCurrentCustomer()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">✏️ เปลี่ยนชื่อ</button>
+            <button onclick="deleteCurrentCustomer()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">🗑️ ลบลูกค้า</button>
+          </div>
+        </div>
+      </div>
 
-        let currentPageId = 1;
-        let pages = {};
-        let transactions = [];
-        let overviewChart = null;
-
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-
-        // ==========================
-        // Helper ตัวเลข
-        // ==========================
-        function toNum(value) {
-            if (value === "" || value === null || value === undefined) return 0;
-            const num = typeof value === "string" ? parseFloat(value.replace(/,/g, "")) : value;
-            return isNaN(num) ? 0 : num;
-        }
-
-        function formatNumber(num) {
-            if (num === "" || isNaN(Number(num))) return "";
-            return Number(num).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function normalizeNumber(val) {
-            if (val === "") return "";
-            const cleaned = val.replace(/[^0-9.]/g, "");
-            const parts = cleaned.split(".");
-            if (parts.length > 2) {
-                return parts[0] + "." + parts.slice(1).join("");
-            }
-            return cleaned;
-        }
-
-        // ==========================
-        // คำนวณยอดต่อ 1 ลูกค้า
-        // ==========================
-        function computeCustomerFinalBalance(transactions) {
-            let runningBalance = 0;
-
-            transactions.forEach(transaction => {
-                const deposit = toNum(transaction.item);
-                const withdraw = toNum(transaction.debit);
-                const profitPercent = toNum(transaction.credit);
-
-                const base = runningBalance;
-                let profitAmount = 0;
-
-                if (profitPercent !== 0) {
-                    profitAmount = base * (profitPercent / 100);
-                }
-
-                runningBalance = base + deposit - withdraw + profitAmount;
-            });
-
-            return runningBalance;
-        }
-
-        // ==========================
-        // ยอดรวมทุกบัญชี
-        // ==========================
-        function calculateTotalAllAccounts() {
-            let totalBalance = 0;
-            
-            Object.values(pages).forEach(customer => {
-                const customerBalance = computeCustomerFinalBalance(customer.transactions);
-                totalBalance += customerBalance;
-            });
-            
-            const totalElement = document.getElementById('totalAllAccounts');
-            if (totalElement) {
-                totalElement.textContent = formatNumber(totalBalance);
-                
-                if (totalBalance >= 0) {
-                    totalElement.className = 'bg-gradient-to-r from-green-500 to-blue-600 text-white px-4 py-2 rounded-lg font-bold text-lg shadow-lg';
-                } else {
-                    totalElement.className = 'bg-gradient-to-r from-red-500 to-orange-600 text-white px-4 py-2 rounded-lg font-bold text-lg shadow-lg';
-                }
-            }
-            
-            return totalBalance;
-        }
-
-        // ==========================
-        // จัดการ LocalStorage
-        // ==========================
-        function saveUserData() {
-            saveCurrentPageData();
-            localStorage.setItem('pages', JSON.stringify(pages));
-            localStorage.setItem('currentPageId', currentPageId.toString());
-        }
-
-        function loadUserData() {
-            const savedPages = localStorage.getItem('pages');
-            const savedCurrentPageId = localStorage.getItem('currentPageId');
-            
-            if (savedPages) {
-                pages = JSON.parse(savedPages);
-                currentPageId = savedCurrentPageId ? parseInt(savedCurrentPageId) : parseInt(Object.keys(pages)[0]);
-            } else {
-                currentPageId = 1;
-                pages = {
-                    1: {
-                        id: 1,
-                        name: "ลูกค้าคนที่ 1",
-                        reportTitle: "ใบแสดงรายการปั้นพอร์ต",
-                        bankName: "ธนาคารกสิกรไทย",
-                        accountNo: "",
-                        transactions: [
-                            { id: generateId(), date: "", item: "", debit: "", credit: "", channel: "", detail: "", profitAmount: 0 }
-                        ]
-                    }
-                };
-            }
-            
-            transactions = pages[currentPageId].transactions;
-            loadPageData();
-        }
-
-        // ==========================
-        // สลับ View
-        // ==========================
-        function showCustomerList() {
-            document.querySelector('.customer-list-section').style.display = 'block';
-            document.getElementById('statementSection').classList.add('hidden');
-        }
-
-        function showStatementView(customerId) {
-            document.querySelector('.customer-list-section').style.display = 'none';
-            document.getElementById('statementSection').classList.remove('hidden');
-            
-            const customer = pages[customerId];
-            document.getElementById('currentCustomerName').textContent = customer.name;
-            switchToCustomer(customerId);
-        }
-
-        // ==========================
-        // จัดการลูกค้า
-        // ==========================
-        function renderCustomerList() {
-            const customerContainer = document.getElementById('customerList');
-            const customerCountSpan = document.getElementById('customerCount');
-            
-            customerCountSpan.textContent = Object.keys(pages).length;
-            calculateTotalAllAccounts();
-            
-            customerContainer.innerHTML = Object.values(pages).map((customer, index) => {
-                const customerBalance = computeCustomerFinalBalance(customer.transactions);
-                
-                return `
-                <div class="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-xl p-6 transition-all hover:shadow-lg hover:border-blue-300 cursor-pointer group"
-                     onclick="showStatementView(${customer.id})">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-base font-bold shadow-lg">
-                                ${index + 1}
-                            </div>
-                            <div>
-                                <div class="font-bold text-gray-800 text-base group-hover:text-blue-600 transition-colors line-clamp-1">${customer.name}</div>
-                                <div class="text-xs text-gray-500">ID: ${customer.id}</div>
-                            </div>
-                        </div>
-                        <div class="flex space-x-1">
-                            <button onclick="renameCustomer(${customer.id}); event.stopPropagation();" 
-                                    class="text-blue-600 hover:text-blue-800 p-1.5 rounded-lg hover:bg-blue-50 transition-colors text-sm" 
-                                    title="เปลี่ยนชื่อ">
-                                ✏️
-                            </button>
-                            ${Object.keys(pages).length > 1 ? `
-                                <button onclick="deleteCustomer(${customer.id}); event.stopPropagation();" 
-                                        class="text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors text-sm" 
-                                        title="ลบลูกค้า">
-                                    🗑️
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 pt-3 space-y-1">
-                        <div class="flex items-center justify-between text-xs text-gray-600">
-                            <span>รายการทั้งหมด</span>
-                            <span class="font-semibold">${customer.transactions.length} รายการ</span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-gray-600">
-                            <span>ยอดคงเหลือ</span>
-                            <span class="font-bold ${customerBalance >= 0 ? 'text-green-600' : 'text-red-600'}">
-                                ${formatNumber(customerBalance)}
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span>อัพเดทล่าสุด</span>
-                            <span>${new Date().toLocaleDateString('th-TH')}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3 flex items-center justify-center">
-                        <div class="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-medium group-hover:bg-green-200 transition-colors">
-                            📄 ดูใบแสดงรายการ
-                        </div>
-                    </div>
+      <!-- ✅ ตัวครอบส่วนที่ต้องการจับภาพ -->
+      <div id="statementCapture">
+        <!-- ส่วนหัวใบแสดงรายการ -->
+        <div class="bg-white rounded-lg shadow-lg mb-6 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center space-x-4">
+              <div class="relative">
+                <div id="logoContainer" class="w-12 h-12 alphapatra-green rounded-lg flex items-center justify-center cursor-pointer hover:bg-green-700 transition-colors"
+                     onclick="document.getElementById('logoInput').click()">
+                  <span id="logoText" class="text-white font-bold text-xl">A</span>
+                  <img id="logoImage" class="w-12 h-12 rounded-lg object-cover hidden" alt="AlphaPatra Logo">
                 </div>
-            `;
-            }).join('');
-        }
+                <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+              </div>
+              <input id="reportTitle" value="ใบแสดงรายการเงินฝาก"
+                     class="text-2xl font-bold text-gray-800 bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:bg-white rounded px-2 py-1"/>
+            </div>
 
-        function addNewCustomer() {
-            const customerCount = Object.keys(pages).length + 1;
-            const newCustomerName = prompt('ชื่อลูกค้าใหม่:', `ลูกค้าคนที่ ${customerCount}`);
-            if (!newCustomerName || !newCustomerName.trim()) return;
-            
-            const newId = Math.max(...Object.keys(pages).map(Number)) + 1;
-            pages[newId] = {
-                id: newId,
-                name: newCustomerName.trim(),
-                reportTitle: "ใบแสดงรายการปั้นพอร์ต",
-                bankName: newCustomerName.trim(),
-                accountNo: "",
-                transactions: [
-                    { id: generateId(), date: "", item: "", debit: "", credit: "", channel: "", detail: "", profitAmount: 0 }
-                ]
-            };
-            
-            renderCustomerList();
-            saveUserData();
-            showStatementView(newId);
-        }
-
-        function renameCurrentCustomer() {
-            renameCustomer(currentPageId);
-            document.getElementById('currentCustomerName').textContent = pages[currentPageId].name;
-        }
-
-        function deleteCurrentCustomer() {
-            if (Object.keys(pages).length <= 1) {
-                alert('ต้องมีลูกค้าอย่างน้อย 1 คน');
-                return;
-            }
-            
-            if (confirm(`ต้องการลบลูกค้า "${pages[currentPageId].name}" หรือไม่?\n\nข้อมูลทั้งหมดของลูกค้าจะถูกลบอย่างถาวร`)) {
-                delete pages[currentPageId];
-                
-                const remainingCustomers = Object.keys(pages);
-                currentPageId = parseInt(remainingCustomers[0]);
-                transactions = pages[currentPageId].transactions;
-                
-                saveUserData();
-                showCustomerList();
-                renderCustomerList();
-            }
-        }
-
-        function deleteCustomer(customerId) {
-            if (Object.keys(pages).length <= 1) {
-                alert('ต้องมีลูกค้าอย่างน้อย 1 คน');
-                return;
-            }
-            
-            if (confirm(`ต้องการลบลูกค้า "${pages[customerId].name}" หรือไม่?\n\nข้อมูลทั้งหมดของลูกค้าจะถูกลบอย่างถาวร`)) {
-                delete pages[customerId];
-                renderCustomerList();
-                saveUserData();
-            }
-        }
-
-        function switchToCustomer(customerId) {
-            saveCurrentPageData();
-            currentPageId = customerId;
-            transactions = pages[currentPageId].transactions;
-            loadPageData();
-            renderTable();
-            saveUserData();
-        }
-
-        function renameCustomer(customerId) {
-            const currentName = pages[customerId].name;
-            const newName = prompt('ชื่อใหม่:', currentName);
-            if (newName && newName.trim() && newName.trim() !== currentName) {
-                pages[customerId].name = newName.trim();
-                renderCustomerList();
-                saveUserData();
-            }
-        }
-
-        function saveCurrentPageData() {
-            if (pages[currentPageId]) {
-                pages[currentPageId].reportTitle = document.getElementById('reportTitle').value;
-                pages[currentPageId].bankName = document.getElementById('bankName').value;
-                pages[currentPageId].transactions = [...transactions];
-            }
-        }
-
-        function loadPageData() {
-            const page = pages[currentPageId];
-            document.getElementById('reportTitle').value = page.reportTitle;
-            document.getElementById('bankName').value = page.bankName;
-            
-            setTimeout(() => {
-                calculateBalances();
-            }, 100);
-        }
-
-        // ==========================
-        // Dropdown ช่องทาง/รายละเอียด
-        // ==========================
-        function getUniqueValues(field) {
-            const allValues = [];
-            Object.values(pages).forEach(page => {
-                page.transactions.forEach(transaction => {
-                    if (transaction[field] && transaction[field].trim()) {
-                        allValues.push(transaction[field].trim());
-                    }
-                });
-            });
-            return [...new Set(allValues)].sort();
-        }
-
-        function createDropdownInput(value, index, field, placeholder = '') {
-            const uniqueValues = getUniqueValues(field);
-            const dropdownId = `dropdown-${field}-${index}`;
-            
-            return `
-                <div class="relative">
-                    <input type="text" 
-                           value="${value}" 
-                           onchange="updateTransaction(${index}, '${field}', this.value)"
-                           onfocus="showDropdown('${dropdownId}')"
-                           onblur="setTimeout(() => hideDropdown('${dropdownId}'), 200)"
-                           oninput="filterDropdown('${dropdownId}', this.value)"
-                           placeholder="${placeholder}"
-                           class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                    ${uniqueValues.length > 0 ? `
-                        <div id="${dropdownId}" class="hidden absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
-                            ${uniqueValues.map(val => `
-                                <div class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100 last:border-b-0" 
-                                     onclick="selectDropdownValue('${dropdownId}', ${index}, '${field}', '${val.replace(/'/g, "\\'")}')">
-                                    ${val}
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
+            <div class="no-print flex space-x-2">
+              <!-- เมนูส่งออก -->
+              <div class="relative">
+                <button onclick="toggleExportMenu()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                  📤 ส่งออก
+                  <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div id="exportMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div class="py-2">
+                    <button onclick="exportAsImage('png')"  class="w-full text-left px-4 py-2 hover:bg-gray-100">🖼️ บันทึกเป็น PNG</button>
+                    <button onclick="exportAsImage('jpeg')" class="w-full text-left px-4 py-2 hover:bg-gray-100">📸 บันทึกเป็น JPEG</button>
+                    <hr class="my-1">
+                    <button onclick="exportCSV()" class="w-full text-left px-4 py-2 hover:bg-gray-100">📊 Export CSV</button>
+                    <button onclick="window.print()" class="w-full text-left px-4 py-2 hover:bg-gray-100">🖨️ Print PDF</button>
+                  </div>
                 </div>
-            `;
-        }
+              </div>
 
-        function showDropdown(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            if (dropdown) dropdown.classList.remove('hidden');
-        }
+              <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="importCSV(event)">
+              <button onclick="document.getElementById('csvInput').click()"
+                      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">📁 Import CSV</button>
+            </div>
+          </div>
 
-        function hideDropdown(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            if (dropdown) dropdown.classList.add('hidden');
-        }
+          <!-- ข้อมูลหัวบิล -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">เจ้าของเงินลงทุน</label>
+              <input id="bankName" value="ธนาคารอัลฟ่าภัทร"
+                     class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">ผู้ดูแลพอร์ตหุ้น</label>
+              <input id="accountNo" value="XXX-X-XXXXX-X"
+                     class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"/>
+            </div>
+          </div>
 
-        function filterDropdown(dropdownId, inputValue) {
-            const dropdown = document.getElementById(dropdownId);
-            if (!dropdown) return;
-            const items = dropdown.querySelectorAll('div');
-            const searchTerm = inputValue.toLowerCase();
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
-            });
-        }
+          <!-- สรุปยอด -->
+          <div class="mt-4 flex justify-between items-start">
+            <div class="flex space-x-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">เงินลงทุนเริ่มต้น</label>
+                <div id="initialInvestment" class="w-64 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-center font-bold text-lg text-red-700">0.00</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">สรุปยอดเงินล่าสุด</label>
+                <div id="finalBalance" class="w-64 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-center font-bold text-lg text-green-700">0.00</div>
+              </div>
+            </div>
+            <div class="text-right text-sm text-gray-700">
+              <div class="font-semibold text-green-700 mb-1">อัลฟ่าภัทร AlphaPatra</div>
+              <div>เลขที่ 85/1 หมู่ 12 ตำบลสะแก</div>
+              <div>อำเภอสตึก จังหวัดบุรีรัมย์ 31150</div>
+              <div class="font-medium text-blue-600">(0863019724)</div>
+            </div>
+          </div>
+        </div>
 
-        function selectDropdownValue(dropdownId, index, field, value) {
-            const input = document.getElementById(dropdownId).previousElementSibling;
-            input.value = value;
-            updateTransaction(index, field, value);
-            hideDropdown(dropdownId);
-        }
-
-        // ==========================
-        // คำนวณยอด / อัปเดต AlphaProfit
-        // ==========================
-        function calculateBalances() {
-            let initialInvestment = 0;
-            transactions.forEach(transaction => {
-                initialInvestment += toNum(transaction.item);
-            });
-
-            const initialInvestmentElement = document.getElementById('initialInvestment');
-            if (initialInvestmentElement) {
-                initialInvestmentElement.textContent = formatNumber(initialInvestment);
-            }
-            
-            let runningBalance = 0;
-            const balances = [];
-            
-            transactions.forEach((transaction, index) => {
-                const deposit = toNum(transaction.item);
-                const withdraw = toNum(transaction.debit);
-                const profitPercent = toNum(transaction.credit);
-
-                const base = runningBalance;
-                let profitAmount = 0;
-
-                if (profitPercent !== 0) {
-                    profitAmount = base * (profitPercent / 100);
-                }
-
-                transaction.profitAmount = profitAmount;
-
-                runningBalance = base + deposit - withdraw + profitAmount;
-                balances[index] = runningBalance;
-            });
-            
-            updateFinalBalance(balances);
-            updateAlphaProfitFromSummary();
-            return balances;
-        }
-
-        function updateFinalBalance(balances) {
-            const finalBalanceElement = document.getElementById('finalBalance');
-            if (finalBalanceElement) {
-                const lastBalance = balances.length > 0 ? balances[balances.length - 1] : 0;
-                finalBalanceElement.textContent = formatNumber(lastBalance);
-                
-                if (lastBalance >= 0) {
-                    finalBalanceElement.className = 'w-64 p-3 bg-green-50 border-2 border-green-300 rounded-lg text-center font-bold text-lg text-green-700';
-                } else {
-                    finalBalanceElement.className = 'w-64 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-center font-bold text-lg text-red-700';
-                }
-            }
-        }
-
-        function updateAlphaProfitFromSummary() {
-            const finalEl = document.getElementById('finalBalance');
-            const initialEl = document.getElementById('initialInvestment');
-            const totalInput = document.getElementById('ap_total');
-            const fundInput = document.getElementById('ap_fund');
-            const resultDiv = document.getElementById('ap_result');
-
-            if (!finalEl || !initialEl || !totalInput || !fundInput) return;
-
-            const total = toNum(finalEl.textContent || finalEl.innerText || '0');
-            const fund = toNum(initialEl.textContent || initialEl.innerText || '0');
-
-            totalInput.value = total ? total.toFixed(2) : '';
-            fundInput.value = fund ? fund.toFixed(2) : '';
-
-            if (total > 0 || fund > 0) {
-                calcProfit();
-            } else if (resultDiv) {
-                resultDiv.classList.add('hidden');
-            }
-        }
-
-        // ==========================
-        // Render Table
-        // ==========================
-        function renderTable() {
-            const tbody = document.getElementById('transactionTable');
-            const balances = calculateBalances();
-            
-            tbody.innerHTML = transactions.map((transaction, index) => `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-4 whitespace-nowrap">
-                        <input type="date" value="${transaction.date}" 
-                               onchange="updateTransaction(${index}, 'date', this.value)"
-                               class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-right">
-                        <input type="text" value="${transaction.item}" 
-                               onchange="updateTransaction(${index}, 'item', this.value)"
-                               class="w-full p-1 border border-gray-200 rounded text-right focus:ring-1 focus:ring-green-500 focus:border-transparent"
-                               placeholder="0.00">
-                        <div class="text-xs text-blue-600 mt-1">
-                            ${transaction.item ? formatNumber(transaction.item) : ''}
-                        </div>
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-right">
-                        <input type="text" value="${transaction.debit}" 
-                               onchange="updateTransaction(${index}, 'debit', this.value)"
-                               class="w-full p-1 border border-gray-200 rounded text-right focus:ring-1 focus:ring-green-500 focus:border-transparent"
-                               placeholder="0.00">
-                        <div class="text-xs text-red-600 mt-1">
-                            ${transaction.debit ? formatNumber(transaction.debit) : ''}
-                        </div>
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-right">
-                        <input type="text" value="${transaction.credit}" 
-                               onchange="updateTransaction(${index}, 'credit', this.value)"
-                               class="w-full p-1 border border-gray-200 rounded text-right focus:ring-1 focus:ring-green-500 focus:border-transparent"
-                               placeholder="0">
-                        <div class="text-xs text-gray-600 mt-1">
-                            ${transaction.credit ? transaction.credit + ' %' : ''}
-                        </div>
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-right">
-                        <div class="w-full p-1 border border-gray-100 rounded bg-gray-50 text-right text-green-700">
-                            ${transaction.profitAmount ? formatNumber(transaction.profitAmount) : ''}
-                        </div>
-                    </td>
-                    <td class="px-3 py-4">
-                        ${createDropdownInput(transaction.channel, index, 'channel')}
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-right font-medium ${balances[index] >= 0 ? 'text-green-600' : 'text-red-600'}">
-                        ${formatNumber(balances[index])}
-                    </td>
-                    <td class="px-3 py-4">
-                        ${createDropdownInput(transaction.detail, index, 'detail')}
-                    </td>
-                    <td class="px-3 py-4 whitespace-nowrap text-center no-print">
-                        <button onclick="insertRow(${index})" 
-                                class="text-blue-600 hover:text-blue-800 mr-2" 
-                                title="เพิ่มแถวใหม่">➕</button>
-                        <button onclick="deleteRow(${index})" 
-                                class="text-red-600 hover:text-red-800" 
-                                title="ลบแถว">🗑️</button>
-                    </td>
+        <!-- ตารางธุรกรรม -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div class="p-4 alphapatra-green-light border-b">
+            <div class="flex justify-between items-center">
+              <h2 class="text-lg font-semibold text-gray-800">รายการธุรกรรม</h2>
+              <button onclick="addRow()" class="no-print bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">➕ เพิ่มรายการ</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full print-table">
+              <thead class="alphapatra-green text-white">
+                <tr>
+                  <th class="px-3 py-3 text-left text-xs font-medium uppercase">วันที่</th>
+                  <th class="px-3 py-3 text-left text-xs font-medium uppercase">รายการ</th>
+                  <th class="px-3 py-3 text-right text-xs font-medium uppercase">เงินออก</th>
+                  <th class="px-3 py-3 text-right text-xs font-medium uppercase">เงินเข้า</th>
+                  <th class="px-3 py-3 text-left text-xs font-medium uppercase">ช่องทาง</th>
+                  <th class="px-3 py-3 text-left text-xs font-medium uppercase">รายละเอียด</th>
+                  <th class="px-3 py-3 text-right text-xs font-medium uppercase">ยอดคงเหลือ</th>
+                  <th class="px-3 py-3 text-center text-xs font-medium uppercase no-print">จัดการ</th>
                 </tr>
-            `).join('');
-        }
+              </thead>
+              <tbody id="transactionTable" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+          </div>
+        </div>
+      </div> <!-- /#statementCapture -->
+    </div>
+  </div>
 
-        function updateTransaction(index, field, value) {
-            if (field === 'debit' || field === 'credit' || field === 'item') {
-                transactions[index][field] = normalizeNumber(value);
-            } else {
-                transactions[index][field] = value;
+  <!-- ====== สคริปต์แอป ====== -->
+  <script>
+    let currentLoggedUser = 'admin';
+    let currentUserRole = 'admin';
+
+    let currentPageId = 1;
+    let pages = {};
+    let transactions = [];
+
+    function generateId(){ return Date.now().toString(36)+Math.random().toString(36).substr(2); }
+
+    function saveUserData(){
+      saveCurrentPageData();
+      localStorage.setItem('pages', JSON.stringify(pages));
+      localStorage.setItem('currentPageId', String(currentPageId));
+    }
+    function loadUserData(){
+      const savedPages = localStorage.getItem('pages');
+      const savedCurrentPageId = localStorage.getItem('currentPageId');
+      if (savedPages){
+        pages = JSON.parse(savedPages);
+        currentPageId = savedCurrentPageId ? parseInt(savedCurrentPageId) : Number(Object.keys(pages)[0]);
+      } else {
+        currentPageId = 1;
+        pages = {
+          1: {
+            id: 1, name: "ลูกค้าคนที่ 1",
+            reportTitle: "ใบแสดงรายการเงินฝาก",
+            bankName: "ธนาคารอัลฟ่าภัทร",
+            accountNo: "XXX-X-XXXXX-X",
+            transactions: [ { id: generateId(), date:"", item:"", debit:"", credit:"", channel:"", detail:"" } ]
+          }
+        };
+      }
+      transactions = pages[currentPageId].transactions;
+      loadPageData();
+    }
+
+    function showCustomerList(){
+      document.getElementById('customerDashboard').style.display = 'block';
+      document.getElementById('statementSection').classList.add('hidden');
+    }
+    function showStatementView(customerId){
+      document.getElementById('customerDashboard').style.display = 'none';
+      document.getElementById('statementSection').classList.remove('hidden');
+      const customer = pages[customerId];
+      document.getElementById('currentCustomerName').textContent = customer.name;
+      switchToCustomer(customerId);
+    }
+
+    function renderCustomerList(){
+      const wrap = document.getElementById('customerList');
+      document.getElementById('customerCount').textContent = Object.keys(pages).length;
+      wrap.innerHTML = Object.values(pages).map((c, idx)=>`
+        <div class="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-xl p-6 transition-all hover:shadow-lg hover:border-blue-300 cursor-pointer group"
+             onclick="showStatementView(${c.id})">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg font-bold shadow-lg">${idx+1}</div>
+              <div>
+                <div class="font-bold text-gray-800 text-lg group-hover:text-blue-600">${c.name}</div>
+                <div class="text-sm text-gray-500">ID: ${c.id}</div>
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <button onclick="renameCustomer(${c.id}); event.stopPropagation();" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50" title="เปลี่ยนชื่อ">✏️</button>
+              ${Object.keys(pages).length>1?`<button onclick="deleteCustomer(${c.id}); event.stopPropagation();" class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50" title="ลบลูกค้า">🗑️</button>`:''}
+            </div>
+          </div>
+          <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
+              <span>รายการทั้งหมด:</span><span class="font-semibold">${c.transactions.length} รายการ</span>
+            </div>
+            <div class="flex items-center justify-between text-sm text-gray-600">
+              <span>อัปเดตล่าสุด:</span><span>${new Date().toLocaleDateString('th-TH')}</span>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center justify-center">
+            <div class="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium group-hover:bg-green-200">📊 ดูใบแสดงรายการ</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    function addNewCustomer(){
+      const count = Object.keys(pages).length+1;
+      const name = prompt('ชื่อลูกค้าใหม่:', `ลูกค้าคนที่ ${count}`);
+      if(!name||!name.trim()) return;
+      const newId = Math.max(...Object.keys(pages).map(Number))+1;
+      pages[newId] = {
+        id:newId, name:name.trim(),
+        reportTitle:"ใบแสดงรายการเงินฝาก",
+        bankName:name.trim(),
+        accountNo:"",
+        transactions:[{ id:generateId(), date:"", item:"", debit:"", credit:"", channel:"", detail:"" }]
+      };
+      renderCustomerList(); saveUserData(); showStatementView(newId);
+    }
+    function renameCustomer(id){
+      const cur = pages[id].name;
+      const n = prompt('ชื่อใหม่:', cur);
+      if(n && n.trim() && n.trim()!==cur){ pages[id].name = n.trim(); renderCustomerList(); saveUserData(); }
+    }
+    function renameCurrentCustomer(){ renameCustomer(currentPageId); document.getElementById('currentCustomerName').textContent = pages[currentPageId].name; }
+    function deleteCustomer(id){
+      if(Object.keys(pages).length<=1){ alert('ต้องมีลูกค้าอย่างน้อย 1 คน'); return; }
+      if(confirm(`ต้องการลบลูกค้า "${pages[id].name}" หรือไม่?\n\nข้อมูลทั้งหมดของลูกค้าจะถูกลบอย่างถาวร`)){
+        delete pages[id]; renderCustomerList(); saveUserData();
+      }
+    }
+    function deleteCurrentCustomer(){
+      if(Object.keys(pages).length<=1){ alert('ต้องมีลูกค้าอย่างน้อย 1 คน'); return; }
+      if(confirm(`ต้องการลบลูกค้า "${pages[currentPageId].name}" หรือไม่?\n\nข้อมูลทั้งหมดของลูกค้าจะถูกลบอย่างถาวร`)){
+        delete pages[currentPageId];
+        const remain = Object.keys(pages); currentPageId = parseInt(remain[0]);
+        transactions = pages[currentPageId].transactions; saveUserData();
+        showCustomerList(); renderCustomerList();
+      }
+    }
+    function switchToCustomer(id){
+      saveCurrentPageData(); currentPageId = id; transactions = pages[id].transactions;
+      loadPageData(); renderTable(); saveUserData();
+    }
+
+    function saveCurrentPageData(){
+      if(pages[currentPageId]){
+        pages[currentPageId].reportTitle = document.getElementById('reportTitle').value;
+        pages[currentPageId].bankName    = document.getElementById('bankName').value;
+        pages[currentPageId].accountNo   = document.getElementById('accountNo').value;
+        pages[currentPageId].transactions = [...transactions];
+      }
+    }
+    function loadPageData(){
+      const p = pages[currentPageId];
+      document.getElementById('reportTitle').value = p.reportTitle;
+      document.getElementById('bankName').value    = p.bankName;
+      document.getElementById('accountNo').value   = p.accountNo;
+      setTimeout(()=>{ calculateBalances(); },100);
+    }
+
+    const toNum = (v)=> (v===""||v==null)?0:(isNaN(parseFloat(String(v).replace(/,/g,'')))?0:parseFloat(String(v).replace(/,/g,'')));
+    function formatNumber(n){ if(n===""||isNaN(Number(n))) return ""; return Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function normalizeNumber(val){ if(val==="") return ""; const cleaned=val.replace(/[^0-9.]/g,""); const parts=cleaned.split("."); return parts.length>2?parts[0]+"."+parts.slice(1).join(""):cleaned; }
+
+    function calculateBalances(){
+      let initialInvestment = 0;
+      if(transactions.length>0){
+        const firstCredit = toNum(transactions[0].credit);
+        if(firstCredit>0) initialInvestment = firstCredit;
+      }
+      document.getElementById('initialInvestment').textContent = formatNumber(initialInvestment);
+
+      let running = 0;
+      const balances = [];
+      transactions.forEach((t,i)=>{ running = running - toNum(t.debit) + toNum(t.credit); balances[i]=running; });
+      updateFinalBalance(balances);
+      return balances;
+    }
+    function updateFinalBalance(balances){
+      const el = document.getElementById('finalBalance');
+      const last = balances.length?balances[balances.length-1]:0;
+      el.textContent = formatNumber(last);
+      el.className = 'w-64 p-3 rounded-lg text-center font-bold text-lg border-2 '+(last>=0?'bg-green-50 border-green-300 text-green-700':'bg-red-50 border-red-300 text-red-700');
+    }
+
+    function renderTable(){
+      const tbody = document.getElementById('transactionTable');
+      const balances = calculateBalances();
+      tbody.innerHTML = transactions.map((t,i)=>`
+        <tr class="hover:bg-gray-50">
+          <td class="px-3 py-4 whitespace-nowrap">
+            <input type="date" value="${t.date}" onchange="updateTransaction(${i},'date',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent"/>
+          </td>
+          <td class="px-3 py-4">
+            <input type="text" value="${t.item}" onchange="updateTransaction(${i},'item',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent"/>
+          </td>
+          <td class="px-3 py-4 whitespace-nowrap text-right">
+            <input type="text" value="${t.debit}" onchange="updateTransaction(${i},'debit',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded text-right focus:ring-1 focus:ring-green-500 focus:border-transparent" placeholder="0.00"/>
+            <div class="text-xs text-red-600 mt-1">${t.debit?formatNumber(t.debit):''}</div>
+          </td>
+          <td class="px-3 py-4 whitespace-nowrap text-right">
+            <input type="text" value="${t.credit}" onchange="updateTransaction(${i},'credit',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded text-right focus:ring-1 focus:ring-green-500 focus:border-transparent" placeholder="0.00"/>
+            <div class="text-xs text-green-600 mt-1">${t.credit?formatNumber(t.credit):''}</div>
+          </td>
+          <td class="px-3 py-4">
+            <input type="text" value="${t.channel}" onchange="updateTransaction(${i},'channel',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent"/>
+          </td>
+          <td class="px-3 py-4">
+            <input type="text" value="${t.detail}" onchange="updateTransaction(${i},'detail',this.value)"
+                   class="w-full p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 focus:border-transparent"/>
+          </td>
+          <td class="px-3 py-4 whitespace-nowrap text-right font-medium ${balances[i]>=0?'text-green-600':'text-red-600'}">
+            ${formatNumber(balances[i])}
+          </td>
+          <td class="px-3 py-4 whitespace-nowrap text-center no-print">
+            <button onclick="insertRow(${i})" class="text-blue-600 hover:text-blue-800 mr-2" title="เพิ่มแถว">➕</button>
+            <button onclick="deleteRow(${i})" class="text-red-600 hover:text-red-800" title="ลบแถว">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    function updateTransaction(i,field,value){
+      if(field==='debit' || field==='credit'){ transactions[i][field] = normalizeNumber(value); }
+      else { transactions[i][field] = value; }
+      renderTable(); calculateBalances(); saveUserData();
+    }
+    function addRow(){
+      transactions.push({ id:generateId(), date:"", item:"", debit:"", credit:"", channel:"", detail:"" });
+      renderTable(); calculateBalances(); saveUserData();
+    }
+    function insertRow(i){
+      transactions.splice(i+1,0,{ id:generateId(), date:"", item:"", debit:"", credit:"", channel:"", detail:"" });
+      renderTable(); calculateBalances(); saveUserData();
+    }
+    function deleteRow(i){
+      if(transactions.length>1){ transactions.splice(i,1); renderTable(); calculateBalances(); saveUserData(); }
+      else alert('ต้องมีรายการอย่างน้อย 1 รายการ');
+    }
+
+    function safeCSV(s){ return (s.includes(',')||s.includes('"')||s.includes('\n'))?('"'+s.replace(/"/g,'""')+'"'):s; }
+    function exportCSV(){
+      saveCurrentPageData();
+      const header = ['page','date','item','debit','credit','channel','detail'];
+      const lines = [header.join(',')];
+      Object.values(pages).forEach(p=>{
+        p.transactions.forEach(t=>{
+          lines.push([
+            safeCSV(p.name), t.date, safeCSV(t.item),
+            toNum(t.debit).toFixed(2), toNum(t.credit).toFixed(2),
+            safeCSV(t.channel), safeCSV(t.detail)
+          ].join(','));
+        });
+      });
+      const csv = lines.join('\n');
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `alphapatra-statement-${currentLoggedUser}-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click(); URL.revokeObjectURL(url);
+    }
+    function importCSV(e){
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        try{
+          const csv = ev.target.result; const lines = csv.split('\n'); const rows=[];
+          for(let i=1;i<lines.length;i++){
+            const line = lines[i].trim(); if(!line) continue;
+            const vals = parseCSVLine(line);
+            if(vals.length>=6){
+              rows.push({ id:generateId(), date:vals[0], item:vals[1],
+                debit: vals[2]==='0.00'?'':vals[2], credit: vals[3]==='0.00'?'':vals[3],
+                channel: vals[4], detail: vals[5] });
             }
-            renderTable();
-            calculateTotalAllAccounts();
-            saveUserData();
+          }
+          if(rows.length){ transactions = rows; renderTable(); saveUserData(); alert(`นำเข้า ${rows.length} รายการแล้ว`); }
+        }catch(err){ alert('เกิดข้อผิดพลาดในการนำเข้า CSV'); }
+      };
+      reader.readAsText(file);
+    }
+    function parseCSVLine(line){
+      const res=[]; let cur=''; let q=false;
+      for(let i=0;i<line.length;i++){
+        const ch=line[i];
+        if(ch==='"'){ if(q && line[i+1]==='"'){ cur+='"'; i++; } else { q=!q; } }
+        else if(ch===',' && !q){ res.push(cur); cur=''; }
+        else cur+=ch;
+      }
+      res.push(cur); return res;
+    }
+
+    function handleLogoUpload(e){
+      const f=e.target.files[0]; if(!f) return;
+      if(!f.type.startsWith('image/')){ alert('กรุณาเลือกไฟล์รูปภาพ'); return; }
+      if(f.size>5*1024*1024){ alert('ขนาดไฟล์ต้องไม่เกิน 5MB'); return; }
+      const r=new FileReader();
+      r.onload=(ev)=>{
+        const img=document.getElementById('logoImage');
+        const txt=document.getElementById('logoText');
+        img.src=ev.target.result; img.classList.remove('hidden'); txt.classList.add('hidden');
+        localStorage.setItem('alphaPatraLogo', ev.target.result);
+      };
+      r.readAsDataURL(f);
+    }
+    function loadSavedLogo(){
+      const saved=localStorage.getItem('alphaPatraLogo');
+      if(saved){
+        const img=document.getElementById('logoImage'); const txt=document.getElementById('logoText');
+        img.src=saved; img.classList.remove('hidden'); txt.classList.add('hidden');
+      }
+    }
+
+    function toggleExportMenu(){
+      const m=document.getElementById('exportMenu'); m.classList.toggle('hidden');
+      document.addEventListener('click', function closeMenu(e){
+        if(!e.target.closest('#exportMenu') && !e.target.closest('button[onclick="toggleExportMenu()"]')){
+          m.classList.add('hidden'); document.removeEventListener('click', closeMenu);
+        }
+      });
+    }
+
+    function loadHtml2Canvas(){
+      return new Promise((resolve)=>{
+        if(window.html2canvas){ resolve(); return; }
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=resolve; document.head.appendChild(s);
+      });
+    }
+
+    /* ✅ บันทึกเป็นรูปภาพจาก DOM จริงของ #statementCapture */
+    async function exportAsImage(format){
+      try{
+        document.getElementById('exportMenu')?.classList.add('hidden');
+        await loadHtml2Canvas();
+        if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+
+        const noPrintEls = document.querySelectorAll('.no-print');
+        noPrintEls.forEach(el=>{ el.dataset.__prevDisplay = el.style.display || ''; el.style.display='none'; });
+
+        const element = document.getElementById('statementCapture');
+        if(!element){
+          noPrintEls.forEach(el=> el.style.display = el.dataset.__prevDisplay);
+          alert('ไม่พบส่วนใบแสดงรายการสำหรับบันทึก'); return;
         }
 
-        function addRow() {
-            transactions.push({
-                id: generateId(),
-                date: "",
-                item: "",
-                debit: "",
-                credit: "",
-                channel: "",
-                detail: "",
-                profitAmount: 0
-            });
-            renderTable();
-            calculateTotalAllAccounts();
-            saveUserData();
-        }
+        const prevBg = element.style.backgroundColor;
+        element.style.backgroundColor = '#ffffff';
 
-        function insertRow(index) {
-            transactions.splice(index + 1, 0, {
-                id: generateId(),
-                date: "",
-                item: "",
-                debit: "",
-                credit: "",
-                channel: "",
-                detail: "",
-                profitAmount: 0
-            });
-            renderTable();
-            calculateTotalAllAccounts();
-            saveUserData();
-        }
+        const canvas = await html2canvas(element, {
+          backgroundColor:'#ffffff', scale:2, useCORS:true, allowTaint:true, scrollX:0, scrollY:0
+        });
 
-        function deleteRow(index) {
-            if (transactions.length > 1) {
-                transactions.splice(index, 1);
-                renderTable();
-                calculateTotalAllAccounts();
-                saveUserData();
-            } else {
-                alert('ต้องมีรายการอย่างน้อย 1 รายการ');
-            }
-        }
+        noPrintEls.forEach(el=> el.style.display = el.dataset.__prevDisplay);
+        element.style.backgroundColor = prevBg;
 
-        // ==========================
-        // CSV Export / Import
-        // ==========================
-        function safeCSV(str) {
-            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                return '"' + str.replace(/"/g, '""') + '"';
-            }
-            return str;
-        }
+        canvas.toBlob((blob)=>{
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const nameSafe = pages[currentPageId]?.name || 'customer';
+          a.href=url; a.download=`alphapatra-statement-${currentLoggedUser}-${nameSafe}-${new Date().toISOString().slice(0,10)}.${format}`;
+          a.click(); URL.revokeObjectURL(url);
+          alert(`บันทึกไฟล์ ${format.toUpperCase()} สำเร็จ!`);
+        }, `image/${format}`, format==='jpeg'?0.92:1.0);
 
-        function exportCSV() {
-            saveCurrentPageData();
-            
-            const header = ['page', 'date', 'deposit', 'withdraw', 'profit_percent', 'channel', 'detail'];
-            const lines = [header.join(',')];
-            
-            Object.values(pages).forEach(page => {
-                page.transactions.forEach(transaction => {
-                    lines.push([
-                        safeCSV(page.name),
-                        transaction.date,
-                        toNum(transaction.item).toFixed(2),
-                        toNum(transaction.debit).toFixed(2),
-                        toNum(transaction.credit).toFixed(2),
-                        safeCSV(transaction.channel),
-                        safeCSV(transaction.detail)
-                    ].join(','));
-                });
-            });
-            
-            const csv = lines.join('\n');
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `alphapatra-statement-${currentLoggedUser}-${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+      }catch(err){
+        console.error(err); alert('เกิดข้อผิดพลาดในการส่งออกไฟล์ภาพ');
+      }
+    }
 
-        function importCSV(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const csv = e.target.result;
-                    const lines = csv.split('\n');
-                    const newTransactions = [];
-                    
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-                        
-                        const values = parseCSVLine(line);
-                        if (values.length >= 7) {
-                            newTransactions.push({
-                                id: generateId(),
-                                date: values[1],
-                                item: values[2] === '0.00' ? '' : values[2],
-                                debit: values[3] === '0.00' ? '' : values[3],
-                                credit: values[4] === '0.00' ? '' : values[4],
-                                channel: values[5],
-                                detail: values[6],
-                                profitAmount: 0
-                            });
-                        }
-                    }
-                    
-                    if (newTransactions.length > 0) {
-                        transactions = newTransactions;
-                        pages[currentPageId].transactions = transactions;
-                        renderTable();
-                        saveUserData();
-                        alert(`นำเข้าข้อมูลสำเร็จ ${newTransactions.length} รายการ`);
-                    }
-                } catch (error) {
-                    alert('เกิดข้อผิดพลาดในการนำเข้าไฟล์ CSV');
-                }
-            };
-            reader.readAsText(file);
-        }
+    setInterval(()=>{ if(currentLoggedUser){ saveUserData(); } }, 30000);
 
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                    if (inQuotes && line[i + 1] === '"') {
-                        current += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
-                    }
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            
-            result.push(current);
-            return result;
-        }
-
-        // ==========================
-        // Logo
-        // ==========================
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
-                return;
-            }
-            if (file.size > 5 * 1024 * 1024) {
-                alert('ขนาดไฟล์ต้องไม่เกิน 5MB');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const logoImage = document.getElementById('logoImage');
-                const logoText = document.getElementById('logoText');
-                logoImage.src = e.target.result;
-                logoImage.classList.remove('hidden');
-                logoText.classList.add('hidden');
-                localStorage.setItem('bankLogo', e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function loadSavedLogo() {
-            const savedLogo = localStorage.getItem('bankLogo');
-            if (savedLogo) {
-                const logoImage = document.getElementById('logoImage');
-                const logoText = document.getElementById('logoText');
-                logoImage.src = savedLogo;
-                logoImage.classList.remove('hidden');
-                logoText.classList.add('hidden');
-            }
-        }
-
-        // ==========================
-        // Export เป็นภาพ
-        // ==========================
-        function toggleExportMenu() {
-            const menu = document.getElementById('exportMenu');
-            menu.classList.toggle('hidden');
-            
-            document.addEventListener('click', function closeMenu(e) {
-                if (!e.target.closest('#exportMenu') && !e.target.closest('button[onclick="toggleExportMenu()"]')) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', closeMenu);
-                }
-            });
-        }
-
-        function loadHtml2Canvas() {
-            return new Promise((resolve) => {
-                if (window.html2canvas) {
-                    resolve();
-                    return;
-                }
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.onload = resolve;
-                document.head.appendChild(script);
-            });
-        }
-
-        async function exportAsImage(format) {
-            try {
-                document.getElementById('exportMenu').classList.add('hidden');
-                
-                const loadingDiv = document.createElement('div');
-                loadingDiv.id = 'loadingExport';
-                loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-                loadingDiv.innerHTML = `
-                    <div class="bg-white rounded-lg p-6 text-center">
-                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-                        <p class="text-gray-700">กำลังสร้างไฟล์ภาพความละเอียดสูง...</p>
-                    </div>
-                `;
-                document.body.appendChild(loadingDiv);
-                
-                await loadHtml2Canvas();
-                
-                const noPrintElements = document.querySelectorAll('.no-print');
-                noPrintElements.forEach(el => el.style.display = 'none');
-                
-                const statementSection = document.getElementById('statementSection');
-                const tempContainer = document.createElement('div');
-                tempContainer.className = 'bg-gray-50 p-4';
-                
-                const headerClone = statementSection.children[1].cloneNode(true);
-                tempContainer.appendChild(headerClone);
-                
-                const tableClone = statementSection.children[2].cloneNode(true);
-                tempContainer.appendChild(tableClone);
-
-                const profitClone = statementSection.children[3].cloneNode(true);
-                tempContainer.appendChild(profitClone);
-
-                const footerClone = statementSection.children[4].cloneNode(true);
-                tempContainer.appendChild(footerClone);
-                
-                document.body.appendChild(tempContainer);
-                const element = tempContainer;
-
-                const rect = element.getBoundingClientRect();
-                
-                const options = {
-                    backgroundColor: '#ffffff',
-                    scale: 3,
-                    useCORS: true,
-                    allowTaint: true,
-                    scrollX: 0,
-                    scrollY: 0,
-                    width: rect.width,
-                    height: rect.height,
-                    windowWidth: rect.width,
-                    windowHeight: rect.height
-                };
-                
-                const canvas = await html2canvas(element, options);
-                
-                canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `alphapatra-statement-${currentLoggedUser}-${pages[currentPageId].name}-${new Date().toISOString().slice(0,10)}.${format}`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    noPrintElements.forEach(el => el.style.display = '');
-                    document.body.removeChild(tempContainer);
-                    document.body.removeChild(loadingDiv);
-                    
-                    alert(`บันทึกไฟล์ ${format.toUpperCase()} (ความละเอียดสูง) สำเร็จ!`);
-                }, `image/${format}`, format === 'jpeg' ? 0.95 : 1.0);
-                
-            } catch (error) {
-                console.error('Export error:', error);
-                alert('เกิดข้อผิดพลาดในการส่งออกไฟล์ภาพ');
-                
-                const noPrintElements = document.querySelectorAll('.no-print');
-                noPrintElements.forEach(el => el.style.display = '');
-                
-                const tempContainer = document.querySelector('div.bg-gray-50:last-child');
-                if (tempContainer && tempContainer.parentNode === document.body) {
-                    document.body.removeChild(tempContainer);
-                }
-                
-                const loadingDiv = document.getElementById('loadingExport');
-                if (loadingDiv) {
-                    document.body.removeChild(loadingDiv);
-                }
-            }
-        }
-
-        // ==========================
-        // คำนวณส่วนแบ่งกำไร AlphaProfit
-        // ==========================
-        function calcProfit() {
-            const totalInput = document.getElementById('ap_total');
-            const fundInput = document.getElementById('ap_fund');
-            const resultDiv = document.getElementById('ap_result');
-            if (!totalInput || !fundInput || !resultDiv) return;
-
-            const total = parseFloat(totalInput.value) || 0;
-            const fund = parseFloat(fundInput.value) || 0;
-
-            if (total === 0 && fund === 0) {
-                resultDiv.classList.add('hidden');
-                return;
-            }
-
-            const profit = total - fund;
-            const half = profit / 2;
-            const clientNet = fund + half;
-            const managerNet = half;
-
-            resultDiv.innerHTML = `
-                <h4 class="text-base md:text-lg font-semibold text-gray-800 mb-3 text-center">
-                    📑 สรุปผลการแบ่งกำไร
-                </h4>
-                <div class="space-y-2 text-sm md:text-base">
-                    <div class="flex justify-between border-b border-gray-200 pb-1">
-                        <span class="text-gray-600">ยอดรวมทั้งหมด</span>
-                        <span class="font-semibold text-gray-800">
-                            ${total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
-                        </span>
-                    </div>
-                    <div class="flex justify-between border-b border-gray-200 pb-1">
-                        <span class="text-gray-600">เงินทุนลูกค้า</span>
-                        <span class="font-semibold text-gray-800">
-                            ${fund.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
-                        </span>
-                    </div>
-                    <div class="flex justify-between border-b border-gray-200 pb-1">
-                        <span class="text-gray-600">กำไรสุทธิ</span>
-                        <span class="font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}">
-                            ${profit.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
-                        </span>
-                    </div>
-                    <div class="flex justify-between border-b border-gray-200 pb-1">
-                        <span class="text-gray-600">แบ่งกำไรคนละ (50/50)</span>
-                        <span class="font-semibold text-indigo-600">
-                            ${half.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
-                        </span>
-                    </div>
-                </div>
-                <div class="mt-3 bg-white rounded-lg shadow-sm px-3 py-2 space-y-1">
-                    <div class="flex justify-between text-sm md:text-base">
-                        <span class="font-medium text-gray-700">💎 ผู้ว่าจ้างได้รับสุทธิ</span>
-                        <span class="font-semibold text-emerald-600">
-                            ${clientNet.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
-                        </span>
-                    </div>
-                    <div class="flex justify-between text-xs md:text-sm text-gray-600">
-                        <span>ส่วนของผู้ว่าจ้าง</span>
-                        <span>${half.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
-                    </div>
-                    <div class="flex justify-between text-xs md:text-sm text-gray-600">
-                        <span>ส่วนของผู้ดูแลพอร์ต</span>
-                        <span>${managerNet.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</span>
-                    </div>
-                </div>
-            `;
-
-            resultDiv.classList.remove('hidden');
-        }
-
-        // ==========================
-        // กำไรเฉพาะเดือน/ปี รวมทุกลูกค้า
-        // ==========================
-        function calculateMonthlyProfitAllPages(year, month) {
-            let totalProfit = 0;
-
-            Object.values(pages).forEach(page => {
-                let runningBalance = 0;
-
-                (page.transactions || []).forEach(t => {
-                    const deposit = toNum(t.item);
-                    const withdraw = toNum(t.debit);
-                    const profitPercent = toNum(t.credit);
-
-                    const base = runningBalance;
-                    let profitAmount = 0;
-
-                    if (profitPercent !== 0) {
-                        profitAmount = base * (profitPercent / 100);
-                    }
-
-                    if (t.date) {
-                        const d = new Date(t.date);
-                        const tYear = d.getFullYear();
-                        const tMonth = d.getMonth() + 1;
-
-                        if (tYear === year && tMonth === month) {
-                            totalProfit += profitAmount;
-                        }
-                    }
-
-                    runningBalance = base + deposit - withdraw + profitAmount;
-                });
-            });
-
-            return totalProfit;
-        }
-
-        function updateMonthlyProfit() {
-            const monthSelect = document.getElementById('monthlyMonth');
-            const yearSelect  = document.getElementById('monthlyYear');
-            const monthProfitEl = document.getElementById('overviewMonthlyProfit');
-            const monthLabelEl  = document.getElementById('overviewMonthlyLabel');
-
-            if (!monthSelect || !yearSelect || !monthProfitEl || !monthLabelEl) return;
-
-            if (!monthSelect.value || !yearSelect.value) {
-                const now = new Date();
-                const defaultMonth = now.getMonth() + 1;
-                const defaultYearTh = now.getFullYear() + 543;
-                if (!monthSelect.value) monthSelect.value = defaultMonth.toString();
-                if (!yearSelect.value)  yearSelect.value  = defaultYearTh.toString();
-            }
-
-            const month = parseInt(monthSelect.value, 10);
-            const yearTh = parseInt(yearSelect.value, 10);
-            if (!month || !yearTh) return;
-
-            const year = yearTh - 543;
-
-            const monthProfit = calculateMonthlyProfitAllPages(year, month);
-
-            monthProfitEl.textContent = formatNumber(monthProfit);
-            monthProfitEl.className =
-                'text-lg font-semibold ' + (monthProfit >= 0 ? 'text-rose-700' : 'text-red-600');
-
-            const monthNamesTh = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
-                                  'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-
-            monthLabelEl.textContent = `${monthNamesTh[month - 1]} ${yearTh}`;
-        }
-
-        // ==========================
-        // Overview + Chart
-        // ==========================
-        function openOverview() {
-            renderOverview();
-            const modal = document.getElementById('overviewModal');
-            modal.classList.remove('hidden');
-        }
-
-        function closeOverview() {
-            const modal = document.getElementById('overviewModal');
-            modal.classList.add('hidden');
-        }
-
-        function renderOverview() {
-            const tbody = document.getElementById('overviewTableBody');
-            const totalCustomersEl = document.getElementById('overviewTotalCustomers');
-            const sumInitialEl = document.getElementById('overviewSumInitial');
-            const sumFinalEl = document.getElementById('overviewSumFinal');
-            const sumProfitEl = document.getElementById('overviewSumProfit');
-
-            if (!tbody) return;
-
-            const customers = Object.values(pages);
-            const labels = [];
-            const initialData = [];
-            const finalData = [];
-            const profitData = [];
-            const roiData = [];
-
-            let sumInitial = 0;
-            let sumFinal = 0;
-            let sumProfit = 0;
-
-            tbody.innerHTML = customers.map((customer, index) => {
-                const txs = customer.transactions || [];
-                let initial = 0;
-                txs.forEach(t => { initial += toNum(t.item); });
-                const final = computeCustomerFinalBalance(txs);
-                const profit = final - initial;
-                const roi = initial > 0 ? (profit / initial) * 100 : 0;
-
-                labels.push(customer.name || `ลูกค้า ${index + 1}`);
-                initialData.push(initial);
-                finalData.push(final);
-                profitData.push(profit);
-                roiData.push(roi);
-
-                sumInitial += initial;
-                sumFinal += final;
-                sumProfit += profit;
-
-                return `
-                    <tr class="border-b last:border-b-0">
-                        <td class="px-2 py-1 text-xs text-gray-500">${index + 1}</td>
-                        <td class="px-2 py-1 text-xs text-gray-800 font-medium">${customer.name}</td>
-                        <td class="px-2 py-1 text-xs text-right text-gray-600">${formatNumber(initial)}</td>
-                        <td class="px-2 py-1 text-xs text-right text-gray-600">${formatNumber(final)}</td>
-                        <td class="px-2 py-1 text-xs text-right ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}">${formatNumber(profit)}</td>
-                        <td class="px-2 py-1 text-xs text-right ${roi >= 0 ? 'text-indigo-600' : 'text-red-600'}">
-                            ${isFinite(roi) ? roi.toFixed(2) : '0.00'} %
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-
-            if (totalCustomersEl) totalCustomersEl.textContent = customers.length;
-            if (sumInitialEl) sumInitialEl.textContent = formatNumber(sumInitial);
-            if (sumFinalEl) sumFinalEl.textContent = formatNumber(sumFinal);
-            if (sumProfitEl) {
-                sumProfitEl.textContent = formatNumber(sumProfit);
-                sumProfitEl.className = 'text-lg font-semibold ' + (sumProfit >= 0 ? 'text-emerald-600' : 'text-red-600');
-            }
-
-            // อัปเดตกำไรเฉพาะเดือนตาม dropdown
-            updateMonthlyProfit();
-
-            const chartCanvas = document.getElementById('overviewChart');
-            if (!chartCanvas) return;
-
-            const ctx = chartCanvas.getContext('2d');
-            if (overviewChart) {
-                overviewChart.destroy();
-            }
-
-            overviewChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: 'มูลค่าพอร์ตรวมล่าสุด',
-                            data: finalData,
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                            borderRadius: 6,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'กำไรสุทธิ',
-                            data: profitData,
-                            backgroundColor: 'rgba(79, 70, 229, 0.6)',
-                            borderRadius: 6,
-                            yAxisID: 'y'
-                        },
-                        {
-                            type: 'line',
-                            label: 'ผลตอบแทน (%)',
-                            data: roiData,
-                            borderColor: 'rgb(249, 115, 22)',
-                            backgroundColor: 'rgba(249, 115, 22, 0.2)',
-                            tension: 0.3,
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const dsLabel = context.dataset.label || '';
-                                    const value = context.raw;
-                                    if (dsLabel.includes('%')) {
-                                        return `${dsLabel}: ${value.toFixed(2)} %`;
-                                    }
-                                    return `${dsLabel}: ${value.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            position: 'left',
-                            title: { display: true, text: 'มูลค่า (บาท)' },
-                            ticks: {
-                                callback: (value) => value.toLocaleString('th-TH')
-                            }
-                        },
-                        y1: {
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            title: { display: true, text: 'ผลตอบแทน (%)' },
-                            ticks: {
-                                callback: (value) => value + '%'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ==========================
-        // Auto-save & Init
-        // ==========================
-        setInterval(() => {
-            if (currentLoggedUser) {
-                saveUserData();
-            }
-        }, 30000);
-
-        loadUserData();
-        renderCustomerList();
-        renderTable();
-        loadSavedLogo();
-    </script>
+    loadUserData(); renderCustomerList(); renderTable(); loadSavedLogo();
+  </script>
 </body>
 </html>
